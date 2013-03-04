@@ -65,7 +65,7 @@ GLdouble projectionMatrix[16];
 
 //variables
 bool isFilled = true;
-bool isAnimating = true;
+bool isAnimating = false;
 
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -140,7 +140,12 @@ void createObjects(){
 }
 
 bool moveEye(int direction){
-	glutTimerFunc((int) 1000/60, &animationLoop, 0);
+	if (!isAnimating){
+		glutTimerFunc((int) 1000/60, &animationLoop, 0);
+		isAnimating=true;
+	} else {
+		isAnimating=false;
+	}
 	//TODO - redo world movement
 	//this is accomplished by moving the world matrix
 	return true;
