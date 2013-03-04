@@ -18,6 +18,7 @@ void createObjects();
 void render(void);
 void keyboard(unsigned char key, int x, int y);
 void specialKeys(int key, int x, int y);
+void animationLoop(int value);
 bool moveEye(int direction);
 
 //matrices
@@ -54,6 +55,10 @@ void render(){
 
 }
 
+void animationLoop(int value){
+
+}
+
 void createObjects(){
 	//IMPORTANT NOTE:
 		//Try to keep all objects size <= 1 float, as 1 float
@@ -64,6 +69,7 @@ void createObjects(){
 
 bool moveEye(int direction){
 	//TODO - redo world movement
+	//this is accomplished by moving the world matrix
 }
 
 void init(){
