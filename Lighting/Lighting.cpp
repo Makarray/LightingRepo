@@ -55,8 +55,9 @@ bool moveEye(int direction);
 
 //matrices
 GLdouble worldMatrix[16];  //matrix which moves everything but camera
-GLdouble parentMatrix[16]; //matrix which moves parent+child
-GLdouble childMatrix[16];  //matrix which moves only child
+GLdouble outerMatrix[16]; //matrix which moves all rings
+GLdouble middleMatrix[16];  //matrix which moves only two
+GLdouble innerMatrix[16];	//moves only itself
 
 GLint viewport[4];
 GLdouble projectionMatrix[16];
@@ -72,19 +73,29 @@ void render(){
 	glPushMatrix();
 	 glMultMatrixd(worldMatrix); //move objects about world
 
+	 glColor3ub(0,255,0);
+
+	 glutSolidTorus(.1,4,200,200);
 	 glPushMatrix();
-	  glMultMatrixd(parentMatrix); //move parent object
+	  glMultMatrixd(outerMatrix); //move parent object
 	  //stuff goes here
 	  //object calls
 
 	  glPushMatrix();
-	   glMultMatrixd(childMatrix); //move child about parent and child matrix
+	   glMultMatrixd(middleMatrix); //move child about parent and child matrix
 	   //stuff goes here
 	   //object calls
 
+	   glPushMatrix();
+	    glMultMatrixd(innerMatrix);
+		//more stuff
+		glPopMatrix();
 	  glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
+
+	glFlush();
+	glutSwapBuffers();
 
 }
 
@@ -103,10 +114,11 @@ void createObjects(){
 bool moveEye(int direction){
 	//TODO - redo world movement
 	//this is accomplished by moving the world matrix
+	return true;
 }
 
 void init(){
-   	glClearColor(0,0,0,1.0);
+   	glClearColor(.5,.5,.5,1.0);
 	glLineWidth(2.0);
 	glPointSize(3.0);
 
@@ -116,11 +128,13 @@ void init(){
 	glPushMatrix();
 	glLoadIdentity(); //store identity in all matrices
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, parentMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, childMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, outerMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 	glPopMatrix();
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GLUT_MULTISAMPLE);
 	glEnable(GL_LIGHTING); //enable lighting?
 }
 
@@ -218,14 +232,14 @@ void resize(int w, int h){
 	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(	0,0,1,
-				0,0,0,
+	gluLookAt(	0,0,10,
+				0,0,7,
 				0,1,0);
 }
 
 int main(int argc, char** argv){
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE);
   glutInitWindowSize(800,650);
   glutCreateWindow("Lighting Test by Matthew Shrider and James Uhe");
 
