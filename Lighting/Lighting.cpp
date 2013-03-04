@@ -1,3 +1,35 @@
+/**
+MODEL REQUIREMENTS
+   1) Design two 3D objects using GLUT Solid: sphere, cone, torus, ... and GLUquadric objects: gluCylinder, gluDisk, ...
+   2) One of these objects must include a moving component
+   3) Maintain a separate coordinate frame matrix for each object
+   4) Use the mouse or keyboard to translate and rotate each individual object w.r.t to its own coordinate frame.
+   Design the mouse/keyboard controls such that each object can be moved to any position and orientation in the 3D world
+
+ANIMATION REQUIREMENTS
+   5) Use a timer to animate a periodic motion of your object(s) or part of it
+   6) In addition to simple rotation or repetitive translation, the animation must also demonstrate a composite motion. Some examples of composite motions:
+	 A rolling wheel (rotation + translation)
+	 Earth rotation around its axis and revolution around the sun
+	 A football thrown from a quarterback to his receiver (spinning on its axis while its trajectory follows a parabolic curve)
+
+	 The following motions do not exhibit a composite motion:
+	 clock hands
+	 spin of propeller blades
+
+SHADING REQUIREMENTS
+   7) Render the image with shading enabled. Use at least two light sources.
+   8) Provide keyboard controls to enable / disable each light source.
+   9) Use combination of material ambient, diffuse, specular, and shininess coefficients that show the visual effect of real materials.
+      You may use the following table as your guideline for material selection.
+
+EXTRA CREDIT
+   Use a parametric curve (other than a circle) to control the placement of the animated object(s)
+   Render the light source as an emissive object and use keyboard controls to position the ligh source.
+   Use a separate coordinate frame to control the camera
+**/
+
+
 /***********************************
 Lighting test in OpenGL
 @authors: Matthew Shrider and James Uhe
