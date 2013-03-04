@@ -67,8 +67,51 @@ GLdouble projectionMatrix[16];
 bool isFilled = true;
 bool isAnimating = false;
 
+//Light Colors
+GLfloat light0Diffuse[] = {.1, .1, .9};
+GLfloat light0Specular[] = {.9, .1, .1};
+GLfloat light0Ambient[] = {.1, .1, .1};
+
+GLfloat light1Diffuse[] = {.7, .7, .9};
+GLfloat light1Specular[] = {.9, .1, .1};
+GLfloat light1Ambient[] = {.1, .0, .0};
+
+//Light positions
+GLfloat light0pos[] = {-.2,.5,.2,1.0};
+
+GLfloat light1pos[] = {6.0, .2, 0.0, 1.0};
+GLfloat light1focus[] = {-10.0, 0.0, 0.0, 0.0};
+
+//Materials
+GLfloat outerDiffuse[] = {.2, .2, .2};
+GLfloat outerSpecular[] = {.2, .2, .2};
+GLfloat outerEmissive[] = {.0, .0, .0};
+GLfloat outerShininess[] = {80};
+
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT0,GL_SPECULAR, light0Specular);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE, light0Diffuse);
+	glLightfv(GL_LIGHT0,GL_AMBIENT, light0Ambient);
+	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+
+	glEnable(GL_LIGHT1);
+	glLightfv(GL_LIGHT1,GL_SPECULAR, light1Specular);
+	glLightfv(GL_LIGHT1,GL_DIFFUSE, light1Diffuse);
+	glLightfv(GL_LIGHT1,GL_AMBIENT, light1Ambient);
+	glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+	//spotlight stuff
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 64.0);
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1focus);
+
+
+	glMaterialfv(GL_FRONT, GL_SPECULAR, outerSpecular);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, outerDiffuse);
+	glMaterialfv(GL_FRONT, GL_EMISSION, outerEmissive);
+	glMaterialfv(GL_FRONT, GL_SHININESS, outerShininess);
 
 	glPushMatrix();
 	 glMultMatrixd(worldMatrix); //move objects about world
@@ -76,20 +119,20 @@ void render(){
 	 
 	 glPushMatrix();
 	  glMultMatrixd(outerMatrix); //move parent object
-		glutSolidTorus(.1,4.4,100,150);
+		glutSolidTorus(.1,4.4,100,100);
 	  //stuff goes here
 	  //object calls
 
 	  glPushMatrix();
 	   glMultMatrixd(middleMatrix); //move child about parent and child matrix
-		glutSolidTorus(.1,4.2,100,150);
+		glutSolidTorus(.1,4.2,100,100);
 	   //stuff goes here
 	   //object calls
 
 	   glPushMatrix();
 	    glMultMatrixd(innerMatrix);
 		//more stuff
-		glutSolidTorus(.1,4,100,150);
+		glutSolidTorus(.1,4,100,100);
 		glPopMatrix();
 	  glPopMatrix();
 	glPopMatrix();
@@ -104,7 +147,7 @@ void animationLoop(int value){
 	glPushMatrix();
 		glLoadIdentity();
 		//rotate once per amt frames
-		glRotated(360.0/120,0,1,0);
+		glRotated(360.0/100,0,1,0);
 		glMultMatrixd(outerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX,outerMatrix);
 	glPopMatrix();
@@ -127,7 +170,7 @@ void animationLoop(int value){
 
 	//update every 1second/60 (frames per second)
 	glutPostRedisplay();
-	if (isAnimating) glutTimerFunc((int) 1000/60, &animationLoop, 0);
+	if (isAnimating) glutTimerFunc((int) 1000/30, &animationLoop, 0);
 
 }
 
@@ -141,7 +184,7 @@ void createObjects(){
 
 bool moveEye(int direction){
 	if (!isAnimating){
-		glutTimerFunc((int) 1000/60, &animationLoop, 0);
+		glutTimerFunc((int) 1000/30, &animationLoop, 0);
 		isAnimating=true;
 	} else {
 		isAnimating=false;
@@ -152,7 +195,7 @@ bool moveEye(int direction){
 }
 
 void init(){
-   	glClearColor(.5,.5,.5,1.0);
+   	glClearColor(.0,.0,.0,1.0);
 	glLineWidth(2.0);
 	glPointSize(3.0);
 
@@ -170,6 +213,8 @@ void init(){
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GLUT_MULTISAMPLE);
 	glEnable(GL_LIGHTING); //enable lighting?
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
 }
 
 void keyboard(unsigned char key, int x, int y){
