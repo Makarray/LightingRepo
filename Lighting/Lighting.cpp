@@ -65,7 +65,7 @@ GLdouble projectionMatrix[16];
 
 //variables
 bool isFilled = true;
-bool isAnimating = false;
+bool isAnimating = true;
 
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -73,22 +73,23 @@ void render(){
 	glPushMatrix();
 	 glMultMatrixd(worldMatrix); //move objects about world
 
-	 glColor3ub(0,255,0);
-
-	 glutSolidTorus(.1,4,200,200);
+	 
 	 glPushMatrix();
 	  glMultMatrixd(outerMatrix); //move parent object
+		glutSolidTorus(.1,4.4,100,150);
 	  //stuff goes here
 	  //object calls
 
 	  glPushMatrix();
 	   glMultMatrixd(middleMatrix); //move child about parent and child matrix
+		glutSolidTorus(.1,4.2,100,150);
 	   //stuff goes here
 	   //object calls
 
 	   glPushMatrix();
 	    glMultMatrixd(innerMatrix);
 		//more stuff
+		glutSolidTorus(.1,4,100,150);
 		glPopMatrix();
 	  glPopMatrix();
 	glPopMatrix();
@@ -100,6 +101,33 @@ void render(){
 }
 
 void animationLoop(int value){
+	glPushMatrix();
+		glLoadIdentity();
+		//rotate once per amt frames
+		glRotated(360.0/120,0,1,0);
+		glMultMatrixd(outerMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX,outerMatrix);
+	glPopMatrix();
+
+	glPushMatrix();
+		glLoadIdentity();
+		//rotate once per amt frames
+		glRotated(360.0/80,1,0,0);
+		glMultMatrixd(middleMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX,middleMatrix);
+	glPopMatrix();
+
+	glPushMatrix();
+		glLoadIdentity();
+		//rotate once per amt frames
+		glRotated(360.0/60,0,1,0);
+		glMultMatrixd(innerMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX,innerMatrix);
+	glPopMatrix();
+
+	//update every 1second/60 (frames per second)
+	glutPostRedisplay();
+	if (isAnimating) glutTimerFunc((int) 1000/60, &animationLoop, 0);
 
 }
 
@@ -112,6 +140,7 @@ void createObjects(){
 }
 
 bool moveEye(int direction){
+	glutTimerFunc((int) 1000/60, &animationLoop, 0);
 	//TODO - redo world movement
 	//this is accomplished by moving the world matrix
 	return true;
