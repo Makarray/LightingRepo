@@ -32,6 +32,7 @@ GLdouble projectionMatrix[16];
 
 //variables
 bool isFilled = true;
+bool isAnimating = false;
 
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
