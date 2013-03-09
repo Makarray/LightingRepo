@@ -42,7 +42,7 @@ Creates objects in opengl which are lighted realistically
 #endif
 #include <GL/glut.h>
 #include <math.h>
-#include <glm/glm.hpp>
+#include <stdlib.h>
 
 //functions
 void init();
@@ -59,7 +59,10 @@ GLdouble worldMatrix[16];  //matrix which moves everything but camera
 GLdouble outerMatrix[16]; //matrix which moves all rings
 GLdouble middleMatrix[16];  //matrix which moves only two
 GLdouble innerMatrix[16];	//moves only itself
-float  light0_diff[] = {1.0, 0.9, 0.05, 1};GLint viewport[4];
+GLdouble light0Matrix[16];
+GLdouble light1Matrix[16];
+float  light0_diff[] = {1.0, 0.9, 0.05, 1};
+GLint viewport[4];
 GLdouble projectionMatrix[16];
 //lists (unless object-buffering)
 
@@ -72,31 +75,34 @@ bool light1_on = true;
 //object colors
 GLfloat brass_am[] = {0.329412, 0.223529, 0.027451, 1.000000};
 GLfloat jade_am[] = {0.135000, 0.222500, 0.157500, 0.950000};
-GLfloat obsidian_am[] = {0.053750, 0.050000, 0.066250, 0.820000};
+GLfloat ruby_am[] = {0.374500, 0.011750, 0.011750, 0.550000};
+GLfloat ball_am[] = {0.0, .6, 0.0, .3};
 
 GLfloat brass_dif[] = {0.780392, 0.568627, 0.113725, 1.000000};
 GLfloat jade_dif[] = {0.540000, 0.890000, 0.630000, 0.950000};
-GLfloat obsidian_dif[] = {0.182750, 0.170000, 0.225250, 0.820000};
+GLfloat ruby_dif[] = {0.714240, 0.041360, 0.041360, 0.550000};
 
 GLfloat brass_spec[] = {0.992157, 0.941176, 0.807843, 1.000000};
 GLfloat jade_spec[] = {0.316228, 0.316228, 0.316228, 0.950000};
-GLfloat obsidian_spec[] = {0.332741, 0.328634, 0.346435, 0.820000};
+GLfloat ruby_spec[] = {0.827811, 0.626959, 0.626959, 0.550000};
 
 GLfloat brass_shiny[] = {27.897400};
 GLfloat jade_shiny[] = {12.800000};
-GLfloat obsidian_shiny[] = {38.400002};
+GLfloat ruby_shiny[] = {76.800003};
+GLfloat ball_shiny[] = {12};
+GLfloat ball_emissive[] = {0.0, .1, 0.0, .3};
 
 //Cone color
 GLfloat cone_emit[]={0.192250, 0.192250, 0.192250, 1.000000};
 
 //Light Colors
-GLfloat light0Diffuse[] = {.1, .1, .9};
-GLfloat light0Specular[] = {.9, .1, .1};
-GLfloat light0Ambient[] = {.1, .1, .1};
+GLfloat light0Diffuse[] = {.3, .6, .3};
+GLfloat light0Specular[] = {.3, .9, .3};
+GLfloat light0Ambient[] = {.4, .4, .4};
 
 GLfloat light1Diffuse[] = {.7, .7, .9};
-GLfloat light1Specular[] = {.9, .1, .1};
-GLfloat light1Ambient[] = {.1, .0, .0};
+GLfloat light1Specular[] = {.8, .8, 1};
+GLfloat light1Ambient[] = {0, .0, .0};
 
 
 //Light positions
@@ -106,27 +112,27 @@ GLfloat light1pos[] = {6.0, .2, 0.0, 0.0};
 GLfloat light1focus[] = {-10.0, 0.0, 0.0, 0.0};
 
 
-//Materials
-GLfloat outerDiffuse[] = {.2, .2, .2};
-GLfloat outerSpecular[] = {.2, .2, .2};
-GLfloat outerEmissive[] = {.0, .0, .0};
-GLfloat outerShininess[] = {80};
-
-
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glPushMatrix();
+	 glMultMatrixd(worldMatrix); //move objects about world
+	 
 	if(light0_on){
+		glPushMatrix();
+		glMultMatrixd(light0Matrix);
 		glEnable(GL_LIGHT0);
 		glLightfv(GL_LIGHT0,GL_SPECULAR, light0Specular);
 		glLightfv(GL_LIGHT0,GL_DIFFUSE, light0Diffuse);
 		glLightfv(GL_LIGHT0,GL_AMBIENT, light0Ambient);
 		glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-
+		glPopMatrix();
 	}
 	else glDisable(GL_LIGHT0);
 
 	if(light1_on){
+		glPushMatrix();
+		glMultMatrixd(light1Matrix);
 		glEnable(GL_LIGHT1);
 		glLightfv(GL_LIGHT1,GL_SPECULAR, light1Specular);
 		glLightfv(GL_LIGHT1,GL_DIFFUSE, light1Diffuse);
@@ -135,28 +141,11 @@ void render(){
 		//spotlight stuff
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 64.0);
 		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0);
-	//	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1focus);
+		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1focus);
+		glPopMatrix();
 
-		 glPushMatrix();
-		    glPushAttrib(GL_LIGHTING_BIT);
-
-		    glMaterialfv(GL_FRONT, GL_EMISSION, light0_diff);
-		    glTranslatef(light1pos[0], light1pos[1], light1pos[2]);
-		    glVertex3f(0.04,5, 12);
-		    glutSolidSphere(.1,20,20);
-		    glPopAttrib();
-		    glPopMatrix();
 	}
 	else glDisable(GL_LIGHT1);
-
-	glMaterialfv(GL_FRONT, GL_SPECULAR, outerSpecular);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, outerDiffuse);
-	glMaterialfv(GL_FRONT, GL_EMISSION, outerEmissive);
-	glMaterialfv(GL_FRONT, GL_SHININESS, outerShininess);
-
-
-	glPushMatrix();
-	 glMultMatrixd(worldMatrix); //move objects about world
 
 	 
 	 glPushMatrix();
@@ -166,8 +155,8 @@ void render(){
 		  glEnable(GL_COLOR_MATERIAL);
 			glMaterialfv(GL_FRONT, GL_SPECULAR, brass_spec);
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, brass_dif);
-//			glMaterialfv(GL_FRONT, GL_SHININESS, brass_am);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, brass_shiny);
+			glMaterialfv(GL_FRONT, GL_SHININESS, brass_shiny);
+			glMaterialfv(GL_FRONT, GL_AMBIENT, brass_am);
 
 	        glPopAttrib();
 
@@ -180,10 +169,9 @@ void render(){
 	   glMultMatrixd(middleMatrix); //move child about parent and child matrix
 
 		  glPushAttrib(GL_LIGHTING_BIT);
-		  glEnable(GL_COLOR_MATERIAL);
 			glMaterialfv(GL_FRONT, GL_SPECULAR, jade_spec);
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, jade_dif);
-//			glMaterialfv(GL_FRONT, GL_SHININESS, jade_shiny);
+			glMaterialfv(GL_FRONT, GL_SHININESS, jade_shiny);
 			glMaterialfv(GL_FRONT, GL_AMBIENT, jade_am);
 	        glPopAttrib();
 
@@ -196,16 +184,20 @@ void render(){
 	    glMultMatrixd(innerMatrix);
 		//more stuff
 		  glPushAttrib(GL_LIGHTING_BIT);
-		  glEnable(GL_COLOR_MATERIAL);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, obsidian_spec);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, obsidian_dif);
-//			glMaterialfv(GL_FRONT, GL_SHININESS, obsidian_shiny);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, obsidian_am);
+			glMaterialfv(GL_FRONT, GL_SPECULAR, ruby_spec);
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, ruby_dif);
+			glMaterialfv(GL_FRONT, GL_SHININESS, ruby_shiny);
+			glMaterialfv(GL_FRONT, GL_AMBIENT, ruby_am);
 
 	        glPopAttrib();
 
-	    glColor3fv(obsidian_am);
+	    glColor3fv(ruby_am);
 		glutSolidTorus(.1,4,100,100);
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, light0Ambient);
+		glMaterialfv(GL_FRONT, GL_SHININESS, ball_shiny);
+		glColor3fv(light0Diffuse);
+		glutSolidSphere(1,30,30);
 		glPopMatrix();
 	  glPopMatrix();
 	glPopMatrix();
@@ -281,6 +273,8 @@ void init(){
 	glGetDoublev(GL_MODELVIEW_MATRIX, outerMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
 	glPopMatrix();
 
 
@@ -294,6 +288,7 @@ void init(){
 }
 
 void keyboard(unsigned char key, int x, int y){
+	glPushMatrix();
 	switch (key)
    {
     case '\x1B':
@@ -301,21 +296,45 @@ void keyboard(unsigned char key, int x, int y){
       break;
 	case 'w':
 		moveEye(0);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(0,0,.3);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 's':
 		moveEye(1);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(0,0,-.3);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'a':
 		moveEye(2);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(.3,0,0);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'd':
 		moveEye(3);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(-.3,0,0);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
-	case 'r':
+	case 'q':
 		moveEye(8);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(0,-.3,0);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
-	case 'f':
+	case 'e':
 		moveEye(9);
+	glLoadIdentity();
+	glMultMatrixd(worldMatrix);
+		glTranslated(0,.3,0);
+	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 
 
@@ -386,10 +405,7 @@ void keyboard(unsigned char key, int x, int y){
 		}
 		break;
 	}
-
-	fprintf(stderr, "light1pos = { %f, %f, %f, %f}\n",light1pos[0],light1pos[1],light1pos[2],light1pos[3]);
-	fprintf(stderr, "light1focus= { %f, %f, %f, %f}\n",light1focus[0],light1focus[1],light1focus[2],light1focus[3]);
-
+	glPopMatrix();
 }
 
 void specialKeys(int key, int x, int y){
@@ -434,6 +450,7 @@ void specialKeys(int key, int x, int y){
 
 
 void resize(int w, int h){
+	glLoadIdentity();
 	glViewport(0,0,(GLint) w, (GLint) h);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glMatrixMode (GL_PROJECTION);
@@ -448,7 +465,7 @@ void resize(int w, int h){
 	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(	0,0,10,
+	gluLookAt(	0,0,15,
 				0,0,7,
 				0,1,0);
 }
