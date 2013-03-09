@@ -47,12 +47,10 @@ Creates objects in opengl which are lighted realistically
 //functions
 void init();
 void resize(int w, int h);
-void createObjects();
 void render(void);
 void keyboard(unsigned char key, int x, int y);
 void specialKeys(int key, int x, int y);
 void animationLoop(int value);
-bool moveEye(int direction);
 
 //matrices
 GLdouble worldMatrix[16];  //matrix which moves everything but camera
@@ -96,20 +94,20 @@ GLfloat ball_emissive[] = {0.0, .1, 0.0, .3};
 GLfloat cone_emit[]={0.192250, 0.192250, 0.192250, 1.000000};
 
 //Light Colors
-GLfloat light0Diffuse[] = {.3, .6, .3};
-GLfloat light0Specular[] = {.3, .9, .3};
-GLfloat light0Ambient[] = {.4, .4, .4};
+GLfloat light0Diffuse[] = {.9, .9, .9};
+GLfloat light0Specular[] = {.5, 1, .3};
+GLfloat light0Ambient[] = {.05, .05, .05};
 
-GLfloat light1Diffuse[] = {.7, .7, .9};
+GLfloat light1Diffuse[] = {.7, .7, .7};
 GLfloat light1Specular[] = {.8, .8, 1};
 GLfloat light1Ambient[] = {0, .0, .0};
 
 
 //Light positions
-GLfloat light0pos[] = {-.2,.5,.2,1.0};
+GLfloat light0pos[] = {0,0,0,1.0};
 
-GLfloat light1pos[] = {6.0, .2, 0.0, 0.0};
-GLfloat light1focus[] = {-10.0, 0.0, 0.0, 0.0};
+GLfloat light1pos[] = {0.0, 0, 0.0,1.0};
+GLfloat light1focus[] = {-1.0, 0.0, 0.0, 0.0};
 
 
 void render(){
@@ -118,17 +116,7 @@ void render(){
 	glPushMatrix();
 	 glMultMatrixd(worldMatrix); //move objects about world
 	 
-	if(light0_on){
-		glPushMatrix();
-		glMultMatrixd(light0Matrix);
-		glEnable(GL_LIGHT0);
-		glLightfv(GL_LIGHT0,GL_SPECULAR, light0Specular);
-		glLightfv(GL_LIGHT0,GL_DIFFUSE, light0Diffuse);
-		glLightfv(GL_LIGHT0,GL_AMBIENT, light0Ambient);
-		glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-		glPopMatrix();
-	}
-	else glDisable(GL_LIGHT0);
+	
 
 	if(light1_on){
 		glPushMatrix();
@@ -138,12 +126,15 @@ void render(){
 		glLightfv(GL_LIGHT1,GL_DIFFUSE, light1Diffuse);
 		glLightfv(GL_LIGHT1,GL_AMBIENT, light1Ambient);
 		glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+		glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, .1);
+		glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, .05);
 		//spotlight stuff
-		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 64.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0);
+		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 90.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT,10.0);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1focus);
+		glTranslated(-.5,0,0);
+		glutSolidSphere(.2,10,10);
 		glPopMatrix();
-
 	}
 	else glDisable(GL_LIGHT1);
 
@@ -194,10 +185,25 @@ void render(){
 	    glColor3fv(ruby_am);
 		glutSolidTorus(.1,4,100,100);
 
+		if(light0_on){
+		glPushMatrix();
+		glMultMatrixd(light0Matrix);
+		glEnable(GL_LIGHT0);
+		glLightfv(GL_LIGHT0,GL_SPECULAR, light0Specular);
+		glLightfv(GL_LIGHT0,GL_DIFFUSE, light0Diffuse);
+		glLightfv(GL_LIGHT0,GL_AMBIENT, light0Ambient);
+		glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, .1);
+		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, .3);
+
 		glMaterialfv(GL_FRONT, GL_AMBIENT, light0Ambient);
 		glMaterialfv(GL_FRONT, GL_SHININESS, ball_shiny);
 		glColor3fv(light0Diffuse);
-		glutSolidSphere(1,30,30);
+		glutSolidSphere(.3,30,30);
+		glPopMatrix();
+	}
+	else glDisable(GL_LIGHT0);
+
 		glPopMatrix();
 	  glPopMatrix();
 	glPopMatrix();
@@ -239,26 +245,6 @@ void animationLoop(int value){
 
 }
 
-void createObjects(){
-	//IMPORTANT NOTE:
-		//Try to keep all objects size <= 1 float, as 1 float
-		//means a size of 1 "screen" (we just zoomed way out last time)
-	//also, think about using "object-buffer-arrays" to do this project (in 
-	//dulimartah's git source)
-}
-
-bool moveEye(int direction){
-	if (!isAnimating){
-		glutTimerFunc((int) 1000/30, &animationLoop, 0);
-		isAnimating=true;
-	} else {
-		isAnimating=false;
-	}
-	//TODO - redo world movement
-	//this is accomplished by moving the world matrix
-	return true;
-}
-
 void init(){
    	glClearColor(.0,.0,.0,1.0);
 	glLineWidth(2.0);
@@ -274,6 +260,7 @@ void init(){
 	glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+	glTranslated(7,0,0);
 	glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
 	glPopMatrix();
 
@@ -295,104 +282,126 @@ void keyboard(unsigned char key, int x, int y){
       exit(EXIT_SUCCESS);
       break;
 	case 'w':
-		moveEye(0);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(0,0,.3);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 's':
-		moveEye(1);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(0,0,-.3);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'a':
-		moveEye(2);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(.3,0,0);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'd':
-		moveEye(3);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(-.3,0,0);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'q':
-		moveEye(8);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(0,-.3,0);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'e':
-		moveEye(9);
 	glLoadIdentity();
-	glMultMatrixd(worldMatrix);
 		glTranslated(0,.3,0);
+	glMultMatrixd(worldMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
+	case '1':
+		glLoadIdentity();
+		glTranslated(-.1,0,0);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '2':
+		glLoadIdentity();
+		glTranslated(.1,0,0);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '3':
+		glLoadIdentity();
+		glTranslated(0,-.1,0);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '4':
+		glLoadIdentity();
+		glTranslated(0,.1,0);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '5':
+		glLoadIdentity();
+		glTranslated(0,0,.1);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '6':
+		glLoadIdentity();
+		glTranslated(0,0,-.1);
+		glMultMatrixd(light0Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light0Matrix);
+		break;
+	case '7':
+		glLoadIdentity();
+		glTranslated(-.1,0,0);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
+	case '8':
+		glLoadIdentity();
+		glTranslated(.1,0,0);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
+	case '9':
+		glLoadIdentity();
+		glTranslated(0,-.1,0);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
+	case '0':
+		glLoadIdentity();
+		glTranslated(0,.1,0);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
+	case '-':
+		glLoadIdentity();
+		glTranslated(0,0,.1);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
+	case '=':
+		glLoadIdentity();
+		glTranslated(0,0,-.1);
+		glMultMatrixd(light1Matrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
+		break;
 
-
-	//Light 1 positioning.
-	case 'i':
-		light1pos[0]+=.1;
-		break;
-	case 'o':
-		light1pos[1]+=.1;
-		break;
-	case 'p':
-		light1pos[2]+=.1;
-		break;
-
-	case 'I':
-		light1pos[0]-=.1;
-		break;
-	case 'O':
-		light1pos[1]-=.1;
-		break;
-	case 'P':
-		light1pos[2]-=.1;
-		break;
-/*
-	//Light 1 focus positioning
-	case 'j':
-		light1focus[0]+=.1;
-		break;
-	case 'k':
-		light1focus[1]+=.1;
-		break;
-	case 'l':
-		light1focus[2]+=.1;
-		break;
-
-	case 'J':
-		light1focus[0]-=.1;
-		break;
-	case 'K':
-		light1focus[1]-=.1;
-		break;
-	case 'L':
-		light1focus[2]-=.1;
-		break;
-*/
 	case 'l':
 		if(light1_on)
 			light1_on = false;
 		else light1_on = true;
+		glutPostRedisplay();
 		break;
 	case 'L':
 		if(light0_on)
 			light0_on = false;
 		else light0_on = true;
+		glutPostRedisplay();
 		break;
-
-
-
 	case 't':
 		if (isFilled) {
 			glPolygonMode(GL_FRONT,GL_LINE);
@@ -404,48 +413,88 @@ void keyboard(unsigned char key, int x, int y){
 			glutPostRedisplay();
 		}
 		break;
+	case ' ':
+		if (!isAnimating){
+			glutTimerFunc((int) 1000/30, &animationLoop, 0);
+			isAnimating=true;
+		} else {
+			isAnimating=false;
+		}
+	break;
 	}
 	glPopMatrix();
+	glutPostRedisplay();
 }
 
 void specialKeys(int key, int x, int y){
+	glPushMatrix();
 	int modifiers = glutGetModifiers();
 	switch (key)
 	{
 	case GLUT_KEY_LEFT:
 		if ( modifiers == GLUT_ACTIVE_SHIFT ){
-			moveEye(10);
-		}
-		else if(modifiers == GLUT_ACTIVE_CTRL) {
-			moveEye(13);
+			glLoadIdentity();
+			glMultMatrixd(light1Matrix);
+			glRotated(-6,0,0,1);
+			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);
 		} else {
-		moveEye(4);
+			glLoadIdentity();
+			glTranslated(0,0,15);
+			glRotated(-6,0,1,0);
+			glTranslated(0,0,-15);
+			glMultMatrixd(worldMatrix);
+			glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		}
 		break;
 	case GLUT_KEY_RIGHT:
 		if (modifiers == GLUT_ACTIVE_SHIFT ){
-		moveEye(11);
-		} else if(modifiers == GLUT_ACTIVE_CTRL) {
-			moveEye(12);
-		} else {
-			moveEye(5);
+			glLoadIdentity();
+			glMultMatrixd(light1Matrix);
+			glRotated(6,0,0,1);
+			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);} else {
+			glLoadIdentity();
+			glTranslated(0,0,15);
+			glRotated(6,0,1,0);
+			glTranslated(0,0,-15);
+			glMultMatrixd(worldMatrix);
+			glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		}
 		break;
 	case GLUT_KEY_UP:
-		if (modifiers == GLUT_ACTIVE_CTRL) {
-			moveEye(14);
+		if (modifiers == GLUT_ACTIVE_SHIFT) {
+			glLoadIdentity();
+			glMultMatrixd(light1Matrix);
+			glRotated(-6,0,1,0);
+			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);
+			
 		} else {
-		moveEye(6);
+			glLoadIdentity();
+			glTranslated(0,0,15);
+			glRotated(-6,1,0,0);
+			glTranslated(0,0,-15);
+			glMultMatrixd(worldMatrix);
+			glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		}
 		break;
 	case GLUT_KEY_DOWN:
-		if (modifiers == GLUT_ACTIVE_CTRL) {
-			moveEye(15);
+		if (modifiers == GLUT_ACTIVE_SHIFT) {
+			glLoadIdentity();
+			glMultMatrixd(light1Matrix);
+			glRotated(6,0,1,0);
+			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);
+			
 		} else {
-		moveEye(7);
+			glLoadIdentity();
+			glTranslated(0,0,15);
+			glRotated(6,1,0,0);
+			glTranslated(0,0,-15);
+			glMultMatrixd(worldMatrix);
+			glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		}
 		break;
 	}
+	glPopMatrix();
+	glutPostRedisplay();
 }
 
 
@@ -477,7 +526,6 @@ int main(int argc, char** argv){
   glutCreateWindow("Lighting Test by Matthew Shrider and James Uhe");
 
   init();
-  createObjects();
 
   glutKeyboardFunc(&keyboard);
   glutSpecialFunc(&specialKeys);
