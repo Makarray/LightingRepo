@@ -8,7 +8,7 @@ MODEL REQUIREMENTS
 
 ANIMATION REQUIREMENTS
   DONE 5) Use a timer to animate a periodic motion of your object(s) or part of it
-   6) In addition to simple rotation or repetitive translation, the animation must also demonstrate a composite motion. Some examples of composite motions:
+  DONE 6) In addition to simple rotation or repetitive translation, the animation must also demonstrate a composite motion. Some examples of composite motions:
 	 A rolling wheel (rotation + translation)
 	 Earth rotation around its axis and revolution around the sun
 	 A football thrown from a quarterback to his receiver (spinning on its axis while its trajectory follows a parabolic curve)
@@ -43,6 +43,7 @@ Creates objects in opengl which are lighted realistically
 #include <GL/glut.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 
 //functions
 void init();
@@ -59,6 +60,7 @@ GLdouble middleMatrix[16];  //matrix which moves only two
 GLdouble innerMatrix[16];	//moves only itself
 GLdouble light0Matrix[16];
 GLdouble light1Matrix[16];
+GLdouble previousTranslate[16];
 float  light0_diff[] = {1.0, 0.9, 0.05, 1};
 GLint viewport[4];
 GLdouble projectionMatrix[16];
@@ -140,6 +142,16 @@ void render(){
 
 	 
 	 glPushMatrix();
+	  if (isAnimating){ //note, this is the composite translation
+		double xamt = ((rand() % 11 - 5)) / 100.0;
+		double yamt = ((rand() % 11 - 5)) / 100.0;
+		double zamt = ((rand() % 11 - 5)) / 100.0;
+		GLdouble tempTranslateMatrix[16] = {1,0,0,0,
+														0,1,0,0,
+														0,0,1,0,
+														xamt,yamt,zamt,1};
+	  glMultMatrixd(tempTranslateMatrix);
+	  }
 	  glMultMatrixd(outerMatrix); //move parent object
 
 		  glPushAttrib(GL_LIGHTING_BIT);
@@ -215,6 +227,7 @@ void render(){
 }
 
 void animationLoop(int value){
+	//create a temporary translation
 	glPushMatrix();
 		glLoadIdentity();
 		//rotate once per amt frames
@@ -246,7 +259,8 @@ void animationLoop(int value){
 }
 
 void init(){
-   	glClearColor(.0,.0,.0,1.0);
+	srand(time(NULL));
+   glClearColor(.0,.0,.0,1.0);
 	glLineWidth(2.0);
 	glPointSize(3.0);
 
