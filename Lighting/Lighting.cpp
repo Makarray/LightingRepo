@@ -331,61 +331,61 @@ void keyboard(unsigned char key, int x, int y){
 			break;
 		case 'c':
 		glLoadIdentity();
-			glTranslated(.3,0,0);
-		glMultMatrixd(middleMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'Z':
-		glLoadIdentity();
 			glTranslated(-.3,0,0);
-		glMultMatrixd(middleMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'X':
-		glLoadIdentity();
-			glTranslated(0,-.3,0);
-		glMultMatrixd(middleMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'C':
-		glLoadIdentity();
-			glTranslated(0,.3,0);
 		glMultMatrixd(middleMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'v':
 		glLoadIdentity();
+			glTranslated(.3,0,0);
+		glMultMatrixd(middleMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
+			break;
+		case 'b':
+		glLoadIdentity();
+			glTranslated(0,.3,0);
+		glMultMatrixd(middleMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
+			break;
+		case 'n':
+		glLoadIdentity();
+			glTranslated(0,-.3,0);
+		glMultMatrixd(middleMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
+			break;
+		case 'Z':
+		glLoadIdentity();
 			glTranslated(0,0,.3);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
-		case 'b':
+		case 'X':
 		glLoadIdentity();
 			glTranslated(0,0,-.3);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
-		case 'n':
-		glLoadIdentity();
-			glTranslated(.3,0,0);
-		glMultMatrixd(innerMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'V':
+		case 'C':
 		glLoadIdentity();
 			glTranslated(-.3,0,0);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
+		case 'V':
+		glLoadIdentity();
+			glTranslated(.3,0,0);
+		glMultMatrixd(innerMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
+			break;
 		case 'B':
 		glLoadIdentity();
-			glTranslated(0,-.3,0);
+			glTranslated(0,.3,0);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'N':
 		glLoadIdentity();
-			glTranslated(0,.3,0);
+			glTranslated(0,-.3,0);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
