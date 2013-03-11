@@ -71,6 +71,7 @@ bool isFilled = true;
 bool isAnimating = false;
 bool light0_on = true;
 bool light1_on = true;
+int speed = 80;
 
 //object colors
 GLfloat brass_am[] = {0.329412, 0.223529, 0.027451, 1.000000};
@@ -231,7 +232,7 @@ void animationLoop(int value){
 	glPushMatrix();
 		glLoadIdentity();
 		//rotate once per amt frames
-		glRotated(360.0/100,0,1,0);
+		glRotated(360.0/speed,0,1,0);
 		glMultMatrixd(outerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX,outerMatrix);
 	glPopMatrix();
@@ -239,7 +240,7 @@ void animationLoop(int value){
 	glPushMatrix();
 		glLoadIdentity();
 		//rotate once per amt frames
-		glRotated(360.0/80,1,0,0);
+		glRotated(360.0/speed,1,0,0);
 		glMultMatrixd(middleMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX,middleMatrix);
 	glPopMatrix();
@@ -247,7 +248,7 @@ void animationLoop(int value){
 	glPushMatrix();
 		glLoadIdentity();
 		//rotate once per amt frames
-		glRotated(360.0/60,0,1,0);
+		glRotated(360.0/speed,0,1,0);
 		glMultMatrixd(innerMatrix);
 		glGetDoublev(GL_MODELVIEW_MATRIX,innerMatrix);
 	glPopMatrix();
@@ -290,6 +291,7 @@ void init(){
 
 void keyboard(unsigned char key, int x, int y){
 	glPushMatrix();
+	int modifiers = glutGetModifiers();
 	switch (key)
    {
     case '\x1B':
@@ -333,74 +335,122 @@ void keyboard(unsigned char key, int x, int y){
 		break;
 	case 'z':
 		glLoadIdentity();
-			glTranslated(0,0,.3);
 		glMultMatrixd(middleMatrix);
+		  if (modifiers == GLUT_ACTIVE_ALT){
+			 glRotated(6,1,0,0);
+		  } else {
+			glTranslated(0,0,.3);
+		  }
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'x':
 		glLoadIdentity();
-			glTranslated(0,0,-.3);
 		glMultMatrixd(middleMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT){
+			 glRotated(-6,1,0,0);
+		} else {
+			glTranslated(0,0,-.3);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'c':
 		glLoadIdentity();
-			glTranslated(-.3,0,0);
 		glMultMatrixd(middleMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT){
+				glRotated(6,0,1,0);
+				} else {
+			glTranslated(-.3,0,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'v':
 		glLoadIdentity();
-			glTranslated(.3,0,0);
 		glMultMatrixd(middleMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT){
+				glRotated(-6,0,1,0);
+				} else {
+			glTranslated(.3,0,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'b':
 		glLoadIdentity();
-			glTranslated(0,.3,0);
 		glMultMatrixd(middleMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT){
+				glRotated(6,0,0,1);
+				} else {
+			glTranslated(0,.3,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'n':
 		glLoadIdentity();
-			glTranslated(0,-.3,0);
 		glMultMatrixd(middleMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT){
+				glRotated(-6,0,0,1);
+				} else {
+			glTranslated(0,-.3,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
 			break;
 		case 'Z':
 		glLoadIdentity();
-			glTranslated(0,0,.3);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_ALT + GLUT_ACTIVE_SHIFT){
+				glRotated(6,1,0,0);
+				} else {
+			glTranslated(0,0,.3);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'X':
 		glLoadIdentity();
-			glTranslated(0,0,-.3);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
+				glRotated(-6,1,0,0);
+				} else {
+			glTranslated(0,0,-.3);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'C':
 		glLoadIdentity();
-			glTranslated(-.3,0,0);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
+				glRotated(6,0,1,0);
+				} else {
+			glTranslated(-.3,0,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'V':
 		glLoadIdentity();
-			glTranslated(.3,0,0);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
+				glRotated(-6,0,1,0);
+				} else {
+			glTranslated(.3,0,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'B':
 		glLoadIdentity();
-			glTranslated(0,.3,0);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
+				glRotated(6,0,0,1);
+				} else {
+			glTranslated(0,.3,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 		case 'N':
 		glLoadIdentity();
-			glTranslated(0,-.3,0);
 		glMultMatrixd(innerMatrix);
+		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
+				glRotated(-6,0,0,1);
+				} else {
+			glTranslated(0,-.3,0);
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
 			break;
 	case '1':
@@ -507,6 +557,14 @@ void keyboard(unsigned char key, int x, int y){
 			isAnimating=false;
 		}
 	break;
+	case '>':
+		  speed -= 2;
+		  if (speed < 1) speed = 1;
+			 break;
+	case '<':
+		  speed += 2;
+		  if (speed > 360) speed = 360;
+			 break;
 	}
 	glPopMatrix();
 	glutPostRedisplay();
