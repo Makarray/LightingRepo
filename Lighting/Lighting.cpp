@@ -24,6 +24,8 @@ Keybindings:
 ** <,>	---	 speeds up and slows down the animation
 ** 
 ** t	 ---	 toggles wireframes
+**
+Git repository: https://github.com/Makarray/LightingRepo.git
 ***********************************/
 
 #if (defined(WIN32) | defined(_WIN32))
