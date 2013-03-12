@@ -1,40 +1,29 @@
-/**
-MODEL REQUIREMENTS
-  DONE 1) Design two 3D objects using GLUT Solid: sphere, cone, torus, ... and GLUquadric objects: gluCylinder, gluDisk, ...
-  DONE 2) One of these objects must include a moving component
-  DONE 3) Maintain a separate coordinate frame matrix for each object
-   4) Use the mouse or keyboard to translate and rotate each individual object w.r.t to its own coordinate frame.
-   Design the mouse/keyboard controls such that each object can be moved to any position and orientation in the 3D world
-
-ANIMATION REQUIREMENTS
-  DONE 5) Use a timer to animate a periodic motion of your object(s) or part of it
-  DONE 6) In addition to simple rotation or repetitive translation, the animation must also demonstrate a composite motion. Some examples of composite motions:
-	 A rolling wheel (rotation + translation)
-	 Earth rotation around its axis and revolution around the sun
-	 A football thrown from a quarterback to his receiver (spinning on its axis while its trajectory follows a parabolic curve)
-
-	 The following motions do not exhibit a composite motion:
-	 clock hands
-	 spin of propeller blades
-
-SHADING REQUIREMENTS
-  DONE 7) Render the image with shading enabled. Use at least two light sources.
-  DONE 8) Provide keyboard controls to enable / disable each light source.
-  DONE 9) Use combination of material ambient, diffuse, specular, and shininess coefficients that show the visual effect of real materials.
-      You may use the following table as your guideline for material selection.
-
-EXTRA CREDIT
-   Use a parametric curve (other than a circle) to control the placement of the animated object(s)
-  DONE Render the light source as an emissive object and use keyboard controls to position the ligh source.
-  DONE Use a separate coordinate frame to control the camera
-**/
-
-
 /***********************************
 Lighting test in OpenGL
 @authors: Matthew Shrider and James Uhe
 
-Creates objects in opengl which are lighted realistically
+Creates a set of ring in OpenGL which create a gyroscope.
+The Gyroscope has realistic lighting on it.
+
+Keybindings:
+** w,a,s,d,q,e	---  Moves camera forwards/back/sideways/and vertically
+** left, right, up, down arrows - Turns camera 
+**
+** 1,2,3,4,5,6			 ---	moves point light around
+** 7,8,9,0,-,=			 ---	moves spotlight around
+** shift-[arrowkeys]	 --- turns spotlight
+** l, L					 ---   toggles each light individually.
+**
+** z,x,c,v,b,n	  ---	   moves middle ring around
+** ctrl-[zxcvbn] ---		turns middle ring
+**
+** Z,X,C,V,B,N	  ---	  Moves inner right around
+** ctrl-[ZXCVBN] ---	  turns inner ring around
+**
+** space ---	 starts and stops the animation
+** <,>	---	 speeds up and slows down the animation
+** 
+** t	 ---	 toggles wireframes
 ***********************************/
 
 #if (defined(WIN32) | defined(_WIN32))
@@ -64,7 +53,6 @@ GLdouble previousTranslate[16];
 float  light0_diff[] = {1.0, 0.9, 0.05, 1};
 GLint viewport[4];
 GLdouble projectionMatrix[16];
-//lists (unless object-buffering)
 
 //variables
 bool isFilled = true;
@@ -93,9 +81,6 @@ GLfloat ruby_shiny[] = {76.800003};
 GLfloat ball_shiny[] = {12};
 GLfloat ball_emissive[] = {0.0, .1, 0.0, .3};
 
-//Cone color
-GLfloat cone_emit[]={0.192250, 0.192250, 0.192250, 1.000000};
-
 //Light Colors
 GLfloat light0Diffuse[] = {.9, .9, .9};
 GLfloat light0Specular[] = {.5, 1, .3};
@@ -105,23 +90,22 @@ GLfloat light1Diffuse[] = {.7, .7, .7};
 GLfloat light1Specular[] = {.8, .8, 1};
 GLfloat light1Ambient[] = {0, .0, .0};
 
-
 //Light positions
 GLfloat light0pos[] = {0,0,0,1.0};
 
 GLfloat light1pos[] = {0.0, 0, 0.0,1.0};
 GLfloat light1focus[] = {-1.0, 0.0, 0.0, 0.0};
 
-
+/*********************************
+* Renders the OpenGL scene
+* *********************************/
 void render(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	 glMultMatrixd(worldMatrix); //move objects about world
-	 
-	
+	glMultMatrixd(worldMatrix); //move objects about world
 
-	if(light1_on){
+	if(light1_on){		 //Spotlight attributes and setup
 		glPushMatrix();
 		glMultMatrixd(light1Matrix);
 		glEnable(GL_LIGHT1);
@@ -131,7 +115,6 @@ void render(){
 		glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
 		glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, .1);
 		glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, .05);
-		//spotlight stuff
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 90.0);
 		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT,10.0);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1focus);
@@ -141,64 +124,57 @@ void render(){
 	}
 	else glDisable(GL_LIGHT1);
 
-	 
-	 glPushMatrix();
-	  if (isAnimating){ //note, this is the composite translation
+	glPushMatrix();
+	if (isAnimating){ //vibrate the gyroscope a small amount each frame
 		double xamt = ((rand() % 11 - 5)) / 100.0;
 		double yamt = ((rand() % 11 - 5)) / 100.0;
 		double zamt = ((rand() % 11 - 5)) / 100.0;
 		GLdouble tempTranslateMatrix[16] = {1,0,0,0,
-														0,1,0,0,
-														0,0,1,0,
-														xamt,yamt,zamt,1};
-	  glMultMatrixd(tempTranslateMatrix);
-	  }
-	  glMultMatrixd(outerMatrix); //move parent object
+			0,1,0,0,
+			0,0,1,0,
+			xamt,yamt,zamt,1};
+		glMultMatrixd(tempTranslateMatrix);
+	}
+	glMultMatrixd(outerMatrix); //move parent object
 
-		  glPushAttrib(GL_LIGHTING_BIT);
-		  glEnable(GL_COLOR_MATERIAL);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, brass_spec);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, brass_dif);
-			glMaterialfv(GL_FRONT, GL_SHININESS, brass_shiny);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, brass_am);
+	glPushAttrib(GL_LIGHTING_BIT);
+	glEnable(GL_COLOR_MATERIAL);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, brass_spec);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, brass_dif);
+	glMaterialfv(GL_FRONT, GL_SHININESS, brass_shiny);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, brass_am);
 
-	        glPopAttrib();
+	glPopAttrib();
 
-	  	  glColor3fv(brass_am);
-		glutSolidTorus(.1,4.4,100,100);
-	  //stuff goes here
-	  //object calls
+	glColor3fv(brass_am);
+	glutSolidTorus(.1,4.4,100,100);
 
-	  glPushMatrix();
-	   glMultMatrixd(middleMatrix); //move child about parent and child matrix
+	glPushMatrix();
+	glMultMatrixd(middleMatrix); //move child about parent and child matrix
 
-		  glPushAttrib(GL_LIGHTING_BIT);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, jade_spec);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, jade_dif);
-			glMaterialfv(GL_FRONT, GL_SHININESS, jade_shiny);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, jade_am);
-	        glPopAttrib();
+	glPushAttrib(GL_LIGHTING_BIT);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, jade_spec);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, jade_dif);
+	glMaterialfv(GL_FRONT, GL_SHININESS, jade_shiny);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, jade_am);
+	glPopAttrib();
 
-	   glColor3fv(jade_am);
-		glutSolidTorus(.1,4.2,100,100);
-	   //stuff goes here
-	   //object calls
+	glColor3fv(jade_am);
+	glutSolidTorus(.1,4.2,100,100);
 
-	   glPushMatrix();
-	    glMultMatrixd(innerMatrix);
-		//more stuff
-		  glPushAttrib(GL_LIGHTING_BIT);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, ruby_spec);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, ruby_dif);
-			glMaterialfv(GL_FRONT, GL_SHININESS, ruby_shiny);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, ruby_am);
+	glPushMatrix();
+	glMultMatrixd(innerMatrix);
+	glPushAttrib(GL_LIGHTING_BIT);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, ruby_spec);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ruby_dif);
+	glMaterialfv(GL_FRONT, GL_SHININESS, ruby_shiny);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ruby_am);
 
-	        glPopAttrib();
+	glPopAttrib();
+	glColor3fv(ruby_am);
+	glutSolidTorus(.1,4,100,100);
 
-	    glColor3fv(ruby_am);
-		glutSolidTorus(.1,4,100,100);
-
-		if(light0_on){
+	if(light0_on){
 		glPushMatrix();
 		glMultMatrixd(light0Matrix);
 		glEnable(GL_LIGHT0);
@@ -217,51 +193,55 @@ void render(){
 	}
 	else glDisable(GL_LIGHT0);
 
-		glPopMatrix();
-	  glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
 
 	glFlush();
 	glutSwapBuffers();
-
 }
 
+/**********************************
+* Spins the gyroscope around and animates the scene
+************************************/
 void animationLoop(int value){
 	//create a temporary translation
 	glPushMatrix();
-		glLoadIdentity();
-		//rotate once per amt frames
-		glRotated(360.0/speed,0,1,0);
-		glMultMatrixd(outerMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX,outerMatrix);
+	glLoadIdentity();
+	//rotate once per amt frames
+	glRotated(360.0/speed,0,1,0);
+	glMultMatrixd(outerMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX,outerMatrix);
 	glPopMatrix();
 
 	glPushMatrix();
-		glLoadIdentity();
-		//rotate once per amt frames
-		glRotated(360.0/speed,1,0,0);
-		glMultMatrixd(middleMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX,middleMatrix);
+	glLoadIdentity();
+	//rotate once per amt frames
+	glRotated(360.0/speed,1,0,0);
+	glMultMatrixd(middleMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX,middleMatrix);
 	glPopMatrix();
 
 	glPushMatrix();
-		glLoadIdentity();
-		//rotate once per amt frames
-		glRotated(360.0/speed,0,1,0);
-		glMultMatrixd(innerMatrix);
-		glGetDoublev(GL_MODELVIEW_MATRIX,innerMatrix);
+	glLoadIdentity();
+	//rotate once per amt frames
+	glRotated(360.0/speed,0,1,0);
+	glMultMatrixd(innerMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX,innerMatrix);
 	glPopMatrix();
 
-	//update every 1second/60 (frames per second)
 	glutPostRedisplay();
+	//update 30 times per second
 	if (isAnimating) glutTimerFunc((int) 1000/30, &animationLoop, 0);
-
 }
 
+/****************************************
+* Sets up the background color, and initializes the object coordinate frames
+*****************************************/
 void init(){
 	srand(time(NULL));
-   glClearColor(.0,.0,.0,1.0);
+	glClearColor(.0,.0,.0,1.0);
 	glLineWidth(2.0);
 	glPointSize(3.0);
 
@@ -279,180 +259,181 @@ void init(){
 	glGetDoublev(GL_MODELVIEW_MATRIX, light1Matrix);
 	glPopMatrix();
 
-
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diff);
-
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diff);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GLUT_MULTISAMPLE);
-	glEnable(GL_LIGHTING); //enable lighting?
+	glEnable(GL_LIGHTING); 
 	glEnable(GL_COLOR_MATERIAL);
 	glShadeModel(GL_SMOOTH);
 }
 
+/**********************************
+* Sets up the keyboard handler
+* ********************************/
 void keyboard(unsigned char key, int x, int y){
 	glPushMatrix();
 	int modifiers = glutGetModifiers();
 	switch (key)
-   {
-    case '\x1B':
-      exit(EXIT_SUCCESS);
-      break;
+	{
+	case '\x1B':
+		exit(EXIT_SUCCESS);
+		break;
 	case 'w':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(0,0,.3);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 's':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(0,0,-.3);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'a':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(.3,0,0);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'd':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(-.3,0,0);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'q':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(0,-.3,0);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'e':
-	glLoadIdentity();
+		glLoadIdentity();
 		glTranslated(0,.3,0);
-	glMultMatrixd(worldMatrix);
-	glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+		glMultMatrixd(worldMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
 		break;
 	case 'z':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
-		  if (modifiers == GLUT_ACTIVE_ALT){
-			 glRotated(6,1,0,0);
-		  } else {
+		if (modifiers == GLUT_ACTIVE_ALT){
+			glRotated(6,1,0,0);
+		} else {
 			glTranslated(0,0,.3);
-		  }
+		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'x':
+		break;
+	case 'x':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT){
-			 glRotated(-6,1,0,0);
+			glRotated(-6,1,0,0);
 		} else {
 			glTranslated(0,0,-.3);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'c':
+		break;
+	case 'c':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT){
-				glRotated(6,0,1,0);
-				} else {
+			glRotated(6,0,1,0);
+		} else {
 			glTranslated(-.3,0,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'v':
+		break;
+	case 'v':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT){
-				glRotated(-6,0,1,0);
-				} else {
+			glRotated(-6,0,1,0);
+		} else {
 			glTranslated(.3,0,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'b':
+		break;
+	case 'b':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT){
-				glRotated(6,0,0,1);
-				} else {
+			glRotated(6,0,0,1);
+		} else {
 			glTranslated(0,.3,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'n':
+		break;
+	case 'n':
 		glLoadIdentity();
 		glMultMatrixd(middleMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT){
-				glRotated(-6,0,0,1);
-				} else {
+			glRotated(-6,0,0,1);
+		} else {
 			glTranslated(0,-.3,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, middleMatrix);
-			break;
-		case 'Z':
+		break;
+	case 'Z':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_ALT + GLUT_ACTIVE_SHIFT){
-				glRotated(6,1,0,0);
-				} else {
+			glRotated(6,1,0,0);
+		} else {
 			glTranslated(0,0,.3);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'X':
+		break;
+	case 'X':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
-				glRotated(-6,1,0,0);
-				} else {
+			glRotated(-6,1,0,0);
+		} else {
 			glTranslated(0,0,-.3);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'C':
+		break;
+	case 'C':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
-				glRotated(6,0,1,0);
-				} else {
+			glRotated(6,0,1,0);
+		} else {
 			glTranslated(-.3,0,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'V':
+		break;
+	case 'V':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
-				glRotated(-6,0,1,0);
-				} else {
+			glRotated(-6,0,1,0);
+		} else {
 			glTranslated(.3,0,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'B':
+		break;
+	case 'B':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
-				glRotated(6,0,0,1);
-				} else {
+			glRotated(6,0,0,1);
+		} else {
 			glTranslated(0,.3,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
-		case 'N':
+		break;
+	case 'N':
 		glLoadIdentity();
 		glMultMatrixd(innerMatrix);
 		if (modifiers == GLUT_ACTIVE_SHIFT + GLUT_ACTIVE_ALT){
-				glRotated(-6,0,0,1);
-				} else {
+			glRotated(-6,0,0,1);
+		} else {
 			glTranslated(0,-.3,0);
 		}
 		glGetDoublev(GL_MODELVIEW_MATRIX, innerMatrix);
-			break;
+		break;
 	case '1':
 		glLoadIdentity();
 		glTranslated(-.1,0,0);
@@ -556,20 +537,23 @@ void keyboard(unsigned char key, int x, int y){
 		} else {
 			isAnimating=false;
 		}
-	break;
+		break;
 	case '>':
-		  speed -= 2;
-		  if (speed < 1) speed = 1;
-			 break;
+		speed -= 2;
+		if (speed < 1) speed = 1;
+		break;
 	case '<':
-		  speed += 2;
-		  if (speed > 360) speed = 360;
-			 break;
+		speed += 2;
+		if (speed > 360) speed = 360;
+		break;
 	}
 	glPopMatrix();
 	glutPostRedisplay();
 }
 
+/************************************
+* Keyhandler for arrowkeys
+* ***********************************/
 void specialKeys(int key, int x, int y){
 	glPushMatrix();
 	int modifiers = glutGetModifiers();
@@ -596,21 +580,21 @@ void specialKeys(int key, int x, int y){
 			glMultMatrixd(light1Matrix);
 			glRotated(6,0,0,1);
 			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);} else {
-			glLoadIdentity();
-			glTranslated(0,0,15);
-			glRotated(6,0,1,0);
-			glTranslated(0,0,-15);
-			glMultMatrixd(worldMatrix);
-			glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
-		}
-		break;
+				glLoadIdentity();
+				glTranslated(0,0,15);
+				glRotated(6,0,1,0);
+				glTranslated(0,0,-15);
+				glMultMatrixd(worldMatrix);
+				glGetDoublev(GL_MODELVIEW_MATRIX, worldMatrix);
+			}
+			break;
 	case GLUT_KEY_UP:
 		if (modifiers == GLUT_ACTIVE_SHIFT) {
 			glLoadIdentity();
 			glMultMatrixd(light1Matrix);
 			glRotated(-6,0,1,0);
 			glGetDoublev(GL_MODELVIEW_MATRIX,light1Matrix);
-			
+
 		} else {
 			glLoadIdentity();
 			glTranslated(0,0,15);
@@ -640,7 +624,9 @@ void specialKeys(int key, int x, int y){
 	glutPostRedisplay();
 }
 
-
+/*************************************
+* Resizes the window and sets up the projection matrix
+* ***********************************/
 void resize(int w, int h){
 	glLoadIdentity();
 	glViewport(0,0,(GLint) w, (GLint) h);
@@ -658,23 +644,26 @@ void resize(int w, int h){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(	0,0,15,
-				0,0,7,
-				0,1,0);
+		0,0,7,
+		0,1,0);
 }
 
+/************************************
+* Sets up the OpenGL callbacks and begins the main loop
+* ***********************************/
 int main(int argc, char** argv){
-  glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE);
-  glutInitWindowSize(800,650);
-  glutCreateWindow("Lighting Test by Matthew Shrider and James Uhe");
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE);
+	glutInitWindowSize(800,650);
+	glutCreateWindow("Lighting Test by Matthew Shrider and James Uhe");
 
-  init();
+	init();
 
-  glutKeyboardFunc(&keyboard);
-  glutSpecialFunc(&specialKeys);
-  glutDisplayFunc(&render);
-  glutReshapeFunc(&resize);
-  glutMainLoop();
+	glutKeyboardFunc(&keyboard);
+	glutSpecialFunc(&specialKeys);
+	glutDisplayFunc(&render);
+	glutReshapeFunc(&resize);
+	glutMainLoop();
 
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
